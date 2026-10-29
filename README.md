@@ -10,10 +10,11 @@ Live: **https://chrisyesaya.github.io**
 - Custom WebGL "black silk" shader background
 - Playable arcade (Snake, Breakout, Pong) on a canvas phone
 
+Source code lives in `source/`. The built site (`index.html`, `assets/`) sits at the repo root, which GitHub Pages serves.
+
 ```bash
+cd source
 npm install
 npm run dev      # local dev server
-npm run build    # production build in dist/
+npm run build    # rebuilds the site into the repo root, then commit & push
 ```
-
-Every push to `main` is built and deployed by `.github/workflows/deploy.yml`.
