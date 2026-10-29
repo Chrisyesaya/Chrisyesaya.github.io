@@ -1,15 +1,12 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import {
-  motion, AnimatePresence, MotionConfig, useScroll, useTransform, useMotionValue, useSpring,
-  useVelocity, useAnimationFrame, useReducedMotion, wrap,
-} from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence, MotionConfig, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import Lenis from 'lenis'
 import Silk from './components/Silk.jsx'
 import Viz from './components/Viz.jsx'
-import { mountGame, sound, best } from './games.js'
 import { projects, capabilities, tools, EMAIL, LINKEDIN } from './data.js'
 
 const EASE = [0.22, 1, 0.36, 1]
+const GMAIL = `https://mail.google.com/mail/?view=cm&fs=1&to=${EMAIL}`
 
 /* ---------- helpers ---------- */
 function useJakartaTime() {
@@ -17,31 +14,6 @@ function useJakartaTime() {
   const [t, setT] = useState(fmt)
   useEffect(() => { const id = setInterval(() => setT(fmt()), 10000); return () => clearInterval(id) }, [])
   return t
-}
-
-function Toast({ msg }) {
-  return (
-    <AnimatePresence>
-      {msg && (
-        <motion.div key={msg} className="toast" role="status" style={{ x: '-50%' }}
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: .35, ease: EASE }}>
-          {msg}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
-function useCopy(setToast) {
-  return useCallback(async () => {
-    try { await navigator.clipboard.writeText(EMAIL); setToast('Email copied') }
-    catch {
-      const el = document.getElementById('mailText')
-      if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r) }
-      setToast('Selected, press Ctrl+C')
-    }
-    setTimeout(() => setToast(''), 2200)
-  }, [setToast])
 }
 
 /* Characters slide up out of a clipped line. */
@@ -59,32 +31,12 @@ function Split({ text, delay = 0, step = .028 }) {
   )
 }
 
-/* Fades/lifts once when scrolled into view. Visible by default under reduced motion. */
-function Reveal({ children, delay = 0, y = 24, as = 'div', ...rest }) {
-  const M = motion[as]
+/* Fades/lifts once when scrolled into view. */
+function Reveal({ children, delay = 0, y = 24, ...rest }) {
   return (
-    <M initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+    <motion.div initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '0px 0px -10% 0px' }}
       transition={{ duration: .9, ease: EASE, delay }} {...rest}>
       {children}
-    </M>
-  )
-}
-
-/* ---------- cursor ---------- */
-function Cursor() {
-  const x = useMotionValue(-100), y = useMotionValue(-100)
-  const sx = useSpring(x, { stiffness: 500, damping: 40, mass: .4 }), sy = useSpring(y, { stiffness: 500, damping: 40, mass: .4 })
-  const [label, setLabel] = useState('')
-  const [hover, setHover] = useState(false)
-  useEffect(() => {
-    const mv = e => { x.set(e.clientX); y.set(e.clientY) }
-    const ov = e => { const t = e.target.closest?.('a,button,[data-cursor]'); setHover(!!t); setLabel(t?.dataset?.cursor || '') }
-    addEventListener('pointermove', mv, { passive: true }); addEventListener('pointerover', ov)
-    return () => { removeEventListener('pointermove', mv); removeEventListener('pointerover', ov) }
-  }, [x, y])
-  return (
-    <motion.div className="cursor" style={{ x: sx, y: sy }} animate={{ scale: label ? 7 : hover ? 3 : 1 }} transition={{ type: 'spring', stiffness: 300, damping: 24 }} aria-hidden="true">
-      <span style={{ opacity: label ? 1 : 0 }}>{label}</span>
     </motion.div>
   )
 }
@@ -94,11 +46,10 @@ function Nav() {
   const t = useJakartaTime()
   return (
     <motion.header className="nav wrap" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: EASE, delay: .9 }}>
-      <a href="#top" className="brand">C.Y.S</a>
-      <nav className="mid" aria-label="Sections">
-        <a className="lnk" href="#work">Work</a><a className="lnk" href="#play">Play</a><a className="lnk" href="#contact">Contact</a>
+      <nav className="links-nav" aria-label="Sections">
+        <a className="lnk" href="#top">Home</a><a className="lnk" href="#work">Work</a><a className="lnk" href="#contact">Contact</a>
       </nav>
-      <div className="right"><span className="mono">Jakarta {t}</span></div>
+      <span className="mono">Jakarta {t}</span>
     </motion.header>
   )
 }
@@ -141,31 +92,24 @@ function Statement() {
   )
 }
 
-/* ---------- work index ---------- */
+/* ---------- work index: click a row to open its details and visual ---------- */
 function Work() {
   const [open, setOpen] = useState(null)
-  const [hov, setHov] = useState(null)
-  const mx = useMotionValue(0), my = useMotionValue(0)
-  const px = useSpring(mx, { stiffness: 220, damping: 26 }), py = useSpring(my, { stiffness: 220, damping: 26 })
-  const rot = useTransform(useVelocity(px), [-1500, 1500], [-8, 8])
-  const fine = typeof matchMedia !== 'undefined' && matchMedia('(hover: hover) and (pointer: fine)').matches
-  const onMove = e => { mx.set(e.clientX + 48); my.set(e.clientY - 115) }
-  const current = projects.find(p => p.id === hov)
   return (
     <section className="block wrap" id="work">
       <Reveal className="shead">
         <h2>Selected work<sup>({projects.length})</sup></h2>
         <p>Production apps from my internship at PT Gaya Makmur Tractors, plus two machine-learning research projects.</p>
       </Reveal>
-      <ul className="rows" onPointerMove={onMove} onPointerLeave={() => setHov(null)}>
+      <ul className="rows">
         {projects.map((p, i) => {
           const isOpen = open === p.id
           return (
-            <motion.li key={p.id} className={'rowi' + (isOpen ? ' open' : '')} onPointerEnter={() => setHov(p.id)}
+            <motion.li key={p.id} className={'rowi' + (isOpen ? ' open' : '')}
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '0px 0px -8% 0px' }} transition={{ duration: .8, ease: EASE, delay: i * .06 }}>
-              <button type="button" aria-expanded={isOpen} aria-controls={'d-' + p.id} onClick={() => setOpen(isOpen ? null : p.id)} data-cursor={isOpen ? 'Close' : 'Open'}>
+              <button type="button" aria-expanded={isOpen} aria-controls={'d-' + p.id} onClick={() => setOpen(isOpen ? null : p.id)}>
                 <span className="idx">{String(i + 1).padStart(2, '0')}</span>
-                <motion.span className="nm" animate={{ x: hov === p.id && fine ? 18 : 0 }} transition={{ duration: .5, ease: EASE }}>{p.name}</motion.span>
+                <span className="nm">{p.name}</span>
                 <span className="meta mono"><span>{p.kind}<i className="plus" aria-hidden="true" /></span><span style={{ color: 'var(--faint)' }}>{p.full}</span></span>
               </button>
               <AnimatePresence initial={false}>
@@ -186,43 +130,14 @@ function Work() {
           )
         })}
       </ul>
-      {fine && (
-        <AnimatePresence>
-          {current && (
-            <motion.div className="preview" style={{ x: px, y: py, rotate: rot }} key="pv"
-              initial={{ opacity: 0, scale: .85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .85 }} transition={{ duration: .35, ease: EASE }}>
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div key={current.id} style={{ position: 'absolute', inset: 0 }} initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '-100%' }} transition={{ duration: .5, ease: EASE }}>
-                  <Viz type={current.viz} />
-                  <span className="cap">{current.stack.join(' · ')}</span>
-                </motion.div>
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
     </section>
   )
 }
 
-/* ---------- capabilities + velocity marquee ---------- */
-function Marquee({ items, base = -2.2 }) {
-  const reduced = useReducedMotion()
-  const x = useMotionValue(0)
-  const { scrollY } = useScroll()
-  const vel = useSpring(useVelocity(scrollY), { damping: 50, stiffness: 400 })
-  const factor = useTransform(vel, [-1500, 0, 1500], [-4, 0, 4], { clamp: false })
-  const dir = useRef(1)
-  const pos = useTransform(x, v => `${wrap(-50, 0, v)}%`)
-  useAnimationFrame((_, dt) => {
-    if (reduced) return
-    let m = dir.current * base * (dt / 1000)
-    const f = factor.get(); if (f < 0) dir.current = -1; else if (f > 0) dir.current = 1
-    m += dir.current * m * Math.abs(f)
-    x.set(x.get() + m)
-  })
+/* ---------- capabilities + marquee (constant speed, moving right) ---------- */
+function Marquee({ items }) {
   const row = items.map((t, i) => <span key={i}>{t}</span>)
-  return <div className="marquee" aria-hidden="true"><motion.div className="track" style={{ x: pos }}>{row}{row}</motion.div></div>
+  return <div className="marquee" aria-hidden="true"><div className="track">{row}{row}</div></div>
 }
 
 function Capabilities() {
@@ -240,54 +155,6 @@ function Capabilities() {
         </div>
       </div>
       <Marquee items={tools} />
-    </section>
-  )
-}
-
-/* ---------- playground ---------- */
-function Playground() {
-  const stageRef = useRef(null), cvRef = useRef(null)
-  const [game, setGame] = useState('snake')
-  const [score, setScore] = useState(0)
-  const [top, setTop] = useState(() => best('snake'))
-  const [hint, setHint] = useState('')
-  const [snd, setSnd] = useState(sound.on)
-  const t = useJakartaTime()
-  const picked = useRef(false)
-  useEffect(() => {
-    const m = mountGame(game, stageRef.current, cvRef.current, (s, b) => { setScore(s); setTop(b) }, picked.current)
-    setHint(m.hint)
-    return () => m.destroy()
-  }, [game])
-  return (
-    <section className="block wrap" id="play">
-      <Reveal className="shead"><h2>Play</h2><p>I'm a mobile engineer, so this portfolio ships with a phone. Pick a game. Your best score stays in this browser.</p></Reveal>
-      <div className="play">
-        <div className="ctl">
-          <div className="picker" role="group" aria-label="Choose a game">
-            {[['snake', 'Snake', 'Arrows · swipe'], ['breakout', 'Breakout', 'Mouse · drag'], ['pong', 'Pong', 'First to 7']].map(([id, name, sub]) => (
-              <button key={id} type="button" aria-pressed={game === id} onClick={() => { picked.current = true; setGame(id) }} data-cursor="Play">
-                <span className="g">{name}</span><span className="label">{sub}</span>
-              </button>
-            ))}
-          </div>
-          <div className="hudline">
-            <span className="label">Score<b>{score}</b></span>
-            <span className="label">Best<b>{top}</b></span>
-            <button type="button" className="ghost" aria-pressed={!snd} onClick={() => setSnd(sound.toggle())}>{snd ? 'Sound on' : 'Sound off'}</button>
-          </div>
-        </div>
-        <Reveal y={60}>
-          <motion.div className="device" whileHover={{ rotate: -1.2, y: -6 }} transition={{ type: 'spring', stiffness: 200, damping: 18 }}>
-            <div className="isl" />
-            <div className="scr">
-              <div className="bar"><span>{t}</span><span className="mono" style={{ fontSize: 10 }}>5G</span></div>
-              <div className="stage" ref={stageRef} tabIndex={0} aria-label={`${game} game. ${hint}`}><canvas ref={cvRef} /></div>
-            </div>
-            <span className="hint label">{hint}</span>
-          </motion.div>
-        </Reveal>
-      </div>
     </section>
   )
 }
@@ -315,15 +182,7 @@ function Journey() {
 }
 
 /* ---------- contact ---------- */
-function Magnet({ children, ...rest }) {
-  const ref = useRef(null)
-  const x = useMotionValue(0), y = useMotionValue(0)
-  const sx = useSpring(x, { stiffness: 180, damping: 14 }), sy = useSpring(y, { stiffness: 180, damping: 14 })
-  const move = e => { const r = ref.current.getBoundingClientRect(); x.set((e.clientX - r.left - r.width / 2) * .35); y.set((e.clientY - r.top - r.height / 2) * .35) }
-  return <motion.button ref={ref} style={{ x: sx, y: sy }} onPointerMove={move} onPointerLeave={() => { x.set(0); y.set(0) }} whileTap={{ scale: .94 }} {...rest}>{children}</motion.button>
-}
-
-function Contact({ copy }) {
+function Contact() {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end end'] })
   const x1 = useTransform(scrollYProgress, [0, 1], ['-12%', '0%'])
@@ -334,13 +193,15 @@ function Contact({ copy }) {
       <h2 className="giant big"><motion.span className="line" style={{ x: x1 }}>Let's build</motion.span><motion.span className="line" style={{ x: x2, textAlign: 'right' }}>something</motion.span></h2>
       <div className="grid">
         <div>
-          <span className="mail" id="mailText">{EMAIL}</span>
+          <span className="mail">{EMAIL}</span>
           <div className="links">
             <a className="ghost" href={LINKEDIN} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
             <a className="ghost" href="https://github.com/Chrisyesaya" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
           </div>
         </div>
-        <Magnet className="magnet" type="button" onClick={copy} data-cursor="Copy">Copy email</Magnet>
+        <motion.a className="magnet" href={GMAIL} target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.04 }} whileTap={{ scale: .96 }}>
+          Email me ↗
+        </motion.a>
       </div>
     </section>
   )
@@ -349,8 +210,6 @@ function Contact({ copy }) {
 /* ---------- app ---------- */
 export default function App() {
   const reduced = useReducedMotion()
-  const [toast, setToast] = useState('')
-  const copy = useCopy(setToast)
   const { scrollY } = useScroll()
   const veil = useTransform(scrollY, v => Math.min(.72, v / (typeof innerHeight !== 'undefined' ? innerHeight * 1.2 : 900)))
 
@@ -367,23 +226,20 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <Silk reduced={reduced} />
       <motion.div className="veil" style={{ opacity: veil }} />
-      {!reduced && <Cursor />}
       <Nav />
       <main className="page">
         <Hero />
         <Statement />
         <Work />
         <Capabilities />
-        <Playground />
         <Journey />
-        <Contact copy={copy} />
+        <Contact />
         <footer className="wrap mono">
           <span>© 2026 Christopher Yesaya Susanto</span>
           <span style={{ color: 'var(--faint)' }}>Built with React, Framer Motion &amp; a WebGL silk shader</span>
           <a href="#top">Back to top ↑</a>
         </footer>
       </main>
-      <Toast msg={toast} />
     </MotionConfig>
   )
 }
