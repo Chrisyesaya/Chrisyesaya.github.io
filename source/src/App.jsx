@@ -61,13 +61,13 @@ function Hero() {
       <h1 className="giant"><Split text="Christopher" delay={.15} /></h1>
       <div className="row2">
         <motion.p className="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1 }}>
-          <b>Mobile engineer</b> who works the whole stack. Flutter on the screen, Laravel and SQL Server behind it.
+          <b>Software engineer</b> shipping production systems end to end: Flutter apps, Laravel APIs on SQL Server, and machine-learning models.
         </motion.p>
         <div className="giant sub"><Split text="Yesaya Susanto" delay={.45} step={.022} /></div>
       </div>
       <motion.div className="base mono" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1.25 }}>
         <span className="status"><i />Open to work &amp; collaboration</span>
-        <span>Informatics · Universitas Bunda Mulia</span>
+        <span>5 projects · Mobile · Backend · ML</span>
         <span>Scroll ↓</span>
       </motion.div>
     </section>
@@ -82,7 +82,7 @@ function Word({ children, progress, range }) {
 function Statement() {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.9', 'center 0.6'] })
-  const text = 'I build software you can hold in one hand. Apps that roles actually use, APIs that stay boring under load, and data that turns into a decision.'
+  const text = 'I build software end to end. Mobile apps that teams rely on every day, APIs and databases that stay steady under real load, and models that turn raw data into decisions.'
   const words = text.split(' ')
   return (
     <section className="statement wrap" ref={ref}>
@@ -99,7 +99,7 @@ function Work() {
     <section className="block wrap" id="work">
       <Reveal className="shead">
         <h2>Selected work<sup>({projects.length})</sup></h2>
-        <p>Production apps from my internship at PT Gaya Makmur Tractors, plus two machine-learning research projects.</p>
+        <p>Production systems built for PT Gaya Makmur Tractors, plus two machine-learning projects from data to deployed dashboard.</p>
       </Reveal>
       <ul className="rows">
         {projects.map((p, i) => {
@@ -162,8 +162,9 @@ function Capabilities() {
 /* ---------- journey ---------- */
 function Journey() {
   const rows = [
-    ['Now', 'Flutter & Laravel Developer', 'PT Gaya Makmur Tractors · Internship', 'Internal mobile and web apps for customer data, warehouse scanning and team discussion, on a SQL Server multi-database architecture.'],
-    ['Education', 'Informatics', 'Universitas Bunda Mulia · GPA 3.8+', 'Applied machine learning research: medical image classification with transformers and demand forecasting with gradient boosting.'],
+    ['Now', 'Software Engineer', 'PT Gaya Makmur Tractors · Flutter, Laravel, SQL Server', 'Design, build and maintain internal products used across branches: a multi-role customer and unit data platform, a warehouse barcode scanner and a sparepart & sales forum, all on a SQL Server multi-database architecture.'],
+    ['Machine learning', 'Applied ML Engineering', 'Forecasting · Computer vision', 'Spare-part demand forecasting with XGBoost quantile models served in a Streamlit dashboard, and tuberculosis detection on chest X-rays with Swin Transformer and Grad-CAM explainability.'],
+    ['Education', 'B.Sc. Informatics', 'Universitas Bunda Mulia · GPA 3.8+', 'Foundation in software engineering, databases and artificial intelligence.'],
   ]
   return (
     <section className="block wrap" id="journey">

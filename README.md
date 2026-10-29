@@ -1,6 +1,6 @@
 # chrisyesaya.github.io
 
-Personal portfolio of **Christopher Yesaya Susanto** — Mobile Engineer (Flutter) & Full Stack Engineer.
+Personal portfolio of **Christopher Yesaya Susanto** — Software Engineer.
 
 Live: **https://chrisyesaya.github.io**
 
