@@ -53,7 +53,9 @@ html.lenis, html.lenis body { height: auto }
 .nav a.lnk:hover::after { transform: scaleX(1); transform-origin: left }
 
 /* hero */
-.hero { position: relative; display: flex; flex-direction: column; justify-content: flex-start; padding-block: clamp(96px, 14vh, 150px) 28px }
+.hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-start; padding-block: clamp(96px, 14vh, 150px) 24px }
+.hero .base { margin-top: auto !important }
+.hero .row2 { margin-bottom: 28px }
 .giant { font-family: var(--display); font-weight: 850; font-variation-settings: "wdth" 62; text-transform: uppercase; line-height: .8; letter-spacing: -.01em; margin: 0 }
 .giant .line { display: block; overflow: hidden; padding-bottom: .04em; white-space: nowrap }
 .giant .ch { display: inline-block; will-change: transform }

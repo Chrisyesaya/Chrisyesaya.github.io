@@ -81,7 +81,7 @@ function Word({ children, progress, range }) {
 }
 function Statement() {
   const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] })
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.9', 'center 0.6'] })
   const text = 'I build software you can hold in one hand. Apps that roles actually use, APIs that stay boring under load, and data that turns into a decision.'
   const words = text.split(' ')
   return (
